@@ -27,31 +27,48 @@ You are now ready to get your K8s on! 😁
 ![](screenshots/diagram.png)
 
 ## Changelog
+* **02/22/2024**
+  * 3 VLANs
+    * 3 subinterfaces VLAN Gateway on a virtual router (VyOS)
+      * 172.17.31.253 VLAN 1731 MGMT
+      * 172.17.51.253 VLAN 1751 EDGE UPLINK T0
+      * 172.30.1.253  VLAN 301 VTEPs
+    * Trunk  Vlan 4095 PortGroup (VMTRUNK)
+    * NestedVM Mgmt Vlan 1731 PortGroup (1731-Network) : all VMs have this Mgmt except for Nested ESXi who are on VMTRUNK
+    * TRUNK-vSwitch Outer VCSA: PortGroup "1731-Network" vlan 1731, PortGroup "VMTRUNK" vlan 4095, MTU 1700
+  * Added 2 NSX Switch (N-VDS): 
+    * Tanzu-VDS1 MGMT(+EDGE UPLINK T0 Segment) "North-South"
+    * Tanzu-VDS2 Overlay "East-West"
+  * Migrate VMKernel0 in VSS to Tanzu-VDS1 in "DVPG-Management Network" , Remove old vSwitch0
+  * 1 VRF 192.168.3.253 VLAN 1683 in a TRUNK VLAN Range "1683-1687"
+  * Updated Add Host FQDN to VC by adding domain to hostname short-name in case the environment doesn't have dns search.
+
 * **01/21/2024**
- * Updated to support T0 Active-Active to scale out, now require 2 edge nodes minimum and up to 10
- * Doubled Host TEP (vmnic3,vmnic4), Edge TEP (fp-eth0,fp-eth3) and Edge Uplink (fp-eth1,fp-eth2) with Loadbalancing Source ID
- * Doubled TEP IP Pool from 10 to 20 IPs
- * Enable Multiple Lab vApp Deployment on the same Cluster with requirement to rename other "tanzu-vcsa-4" VM before redeploying
- * Not tested: Changed T0 VRF default route to T0 scope with NULL address
- * Not tested: Guest Namespace running on T0 VRF Network Settings, default T0 Supervisor Network Setting work fine
- * Increased pause from 30s to 60s before VSAN Diskgroup creation
- * Added 60s pause after adding the 2 HTEP vmnics of ESXi to VDS
- * Updated the download VMware vCenter Server description to latest build 8.0U1d in ## Requirements section
- * Updated NTP address to use GeoIP DNS localised "pool.ntp.org"
+  * Updated to support T0 Active-Active to scale out, now require 2 edge nodes minimum and up to 10
+  * Doubled Host TEP (vmnic3,vmnic4), Edge TEP (fp-eth0,fp-eth3) and Edge Uplink (fp-eth1,fp-eth2) with Loadbalancing Source ID
+  * Doubled TEP IP Pool from 10 to 20 IPs
+  * Enable Multiple Lab vApp Deployment on the same Cluster with requirement to rename other "tanzu-vcsa-4" VM before redeploying
+  * Not tested: Changed T0 VRF default route to T0 scope with NULL address
+  * Not tested: Guest Namespace running on T0 VRF Network Settings, default T0 Supervisor Network Setting work fine
+  * Increased pause from 30s to 60s before VSAN Diskgroup creation
+  * Added 60s pause after adding the 2 HTEP vmnics of ESXi to VDS
+  * Updated the download VMware vCenter Server description to latest build 8.0U1d in ## Requirements section
+  * Updated NTP address to use GeoIP DNS localised "pool.ntp.org"
+
 * **11/07/2023**
- * Updated for vSphere 8.0 and NSX 4.1.1 due to API changes since vSphere 7 and NSX 3
- * Added a few checks to allow reuse of existing objects like vCenter VDS, VDPortGroup, StoragePolicy, Tag and TagCategory, NSX TransportNodeProfile.
- * Added FAQ to create multiple Clusters, and using the same VDS/VDPortGroup, This allow Multi Kubernetes Cluster High-Availability with vSphere Zone and Workload Enablement. Please see this [blog post](http://www.strivevirtually.net)
- * Added a few pause in the usecase where we deploy only a new cluster to allow Nested ESXi to boot and fully come online (180s) and before VSAN Diskgroup creation (30s).
- * Added FTT configuration for VSAN allowing 0 redundancy and to use only one node demo lab VSAN Cluster.
-  * $hostFailuresToTolerate = 0
- * Added pause to the script to workaround [blog post](https://williamlam.com/2020/05/configure-nsx-t-edge-to-run-on-amd-ryzen-cpu.html) without babysitting for AMD Zen DPDK FastPath capable owner CPU.
-  * $NSXTEdgeAmdZenPause = 0
- * Added -DownloadContentOnDemand option in TKG Content Library to prevent the download in advance of 250GB for each cluster and reduce to a few GB.
- * Added T0 VRF Gateway Automated Creation with Static route like the Parent T0 (Note: an uplink segment '$NetworkSegmentProjectVRF' is connected to parent T0)
- * Added Project and VPC Automated Creation with there respective IP Blocks/Subnets.
- * FAQ Updated for the recent changes
- * Download links updated
+  * Updated for vSphere 8.0 and NSX 4.1.1 due to API changes since vSphere 7 and NSX 3
+  * Added a few checks to allow reuse of existing objects like vCenter VDS, VDPortGroup, StoragePolicy, Tag and TagCategory, NSX TransportNodeProfile.
+  * Added FAQ to create multiple Clusters, and using the same VDS/VDPortGroup, This allow Multi Kubernetes Cluster High-Availability with vSphere Zone and Workload Enablement. Please see this [blog post](http://www.strivevirtually.net)
+  * Added a few pause in the usecase where we deploy only a new cluster to allow Nested ESXi to boot and fully come online (180s) and before VSAN Diskgroup creation (30s).
+  * Added FTT configuration for VSAN allowing 0 redundancy and to use only one node demo lab VSAN Cluster.
+    * $hostFailuresToTolerate = 0
+  * Added pause to the script to workaround [blog post](https://williamlam.com/2020/05/configure-nsx-t-edge-to-run-on-amd-ryzen-cpu.html) without babysitting for AMD Zen DPDK FastPath capable owner CPU.
+    * $NSXTEdgeAmdZenPause = 0
+  * Added -DownloadContentOnDemand option in TKG Content Library to prevent the download in advance of 250GB for each cluster and reduce to a few GB.
+  * Added T0 VRF Gateway Automated Creation with Static route like the Parent T0 (Note: an uplink segment '$NetworkSegmentProjectVRF' is connected to parent T0)
+  * Added Project and VPC Automated Creation with there respective IP Blocks/Subnets.
+  * FAQ Updated for the recent changes
+  * Download links updated
 
 * **02/09/2023**
   * Allow additional NSX-T Edge nodes 
